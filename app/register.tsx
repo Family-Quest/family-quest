@@ -1,5 +1,5 @@
-import { Link, Stack } from 'expo-router';
-import { useCallback, useMemo, useState } from 'react';
+import { Link, Stack, router } from 'expo-router';
+import { useState, useMemo, useCallback } from 'react';
 import { View } from 'react-native';
 import { Card, Snackbar, Text } from 'react-native-paper';
 import { object, string } from 'yup';
@@ -10,39 +10,42 @@ import type { UserForm } from '@/types/user';
 
 import SvgLogo from '../assets/logoText.svg';
 
-export default function Login() {
+export default function Register() {
+  const passwordLength = 8;
+
   const [isLoading, setIsLoading] = useState(false);
   const [ errorMessage, setErrorMessage] = useState('');
   const [isVisible, setIsVisible] = useState(false);
 
   const onDismissSnackBar = useCallback(() => setIsVisible(false), []);
 
-  const loginValidationSchema = object().shape({
+  const registerValidationSchema = object().shape({
     email: string()
       .email('Please enter valid email')
       .required('Email Address is Required'),
-
-    password: string().required('Password is required'),
+    password: string()
+      .min(passwordLength, ({ min }) => `Password must be at least ${min} characters`)
+      .required('Password is required'),
   });
 
-  const onSubmitForm = useCallback(async (values: Readonly<UserForm>) => {
+  const onSubmitForm = useCallback(async (values: Readonly<UserForm>) => {    
     setIsLoading(true);
 
-    const { data, error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signUp({
       email: values.email,
       password: values.password,
     });
 
     if (error) {
-      setErrorMessage(error.message === 'Email not confirmed' ? 'Veuillez confirmer votre email avant de vous connectez!' : 'Email ou mot de passe incorrect')
+      setErrorMessage('Une erreur est survenue lors de votre inscription. Veuillez réessayer !')
       setIsVisible(true);
       setIsLoading(false);
     }
 
-    if (data.session) 
-      // DO REDIRECTION HERE
+    if (data.user) {
+      router.replace('');
       setIsLoading(false);
-    
+    }
   }, []);
 
   const style = useMemo(() => ({ flex: 1, gap: 50, justifyContent: 'center', padding: 20 } as const),[]);
@@ -50,33 +53,32 @@ export default function Login() {
   const cardStyle = useMemo(() => ({ backgroundColor: 'white' }), []);
   const cardContentStyle = useMemo(() => ({ gap: 20 }), []);
   const linkStyle = useMemo(() => ({ color: 'blue' }), []);
-  const href = useMemo(() => ({ pathname: 'register' }), []);
+  const href = useMemo(() => ({ pathname: '' }), []);
   // eslint-disable-next-line @typescript-eslint/naming-convention
   const screenWithouHeader = useMemo(() => ({ headerShown: false }), []);
   const action = useMemo(() => ({ label: 'Undo', onPress: () => { setIsVisible(false);  } }), []);
-  // const snackbarMessage = 
 
   return (
     <>
       <Stack.Screen options={screenWithouHeader}/>
       <View style={style}>
         <SvgLogo style={svgStyle} />
-        <Card>
-          <Card.Title title="Connexion" />
+        <Card style={cardStyle}>
+          <Card.Title title="Inscription" />
           <Card.Content style={cardContentStyle}>
             <FormUserAuth
-              buttonLabel="Connexion"
+              buttonLabel="Inscription"
               isLoading={isLoading}
               onSubmitForm={onSubmitForm}
-              validationSchema={loginValidationSchema}
+              validationSchema={registerValidationSchema}
             />
           </Card.Content>
         </Card>
         <Card style={cardStyle}>
           <Card.Content style={cardContentStyle}>
-            <Text>Pas encore inscrit ?</Text>
+            <Text>Deja inscrit ?</Text>
             <Link href={href} style={linkStyle}>
-              Inscription
+              Connexion
             </Link>
           </Card.Content>
         </Card>
