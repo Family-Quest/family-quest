@@ -1,10 +1,12 @@
 module.exports = {
-  preset: '@testing-library/react-native',
+  preset: 'jest-expo',
   moduleNameMapper: {
     // Handle module aliases (this will be automatically configured for you soon)
     '^@/(.*)$': '<rootDir>/src/$1',
 
     '^__mocks__/(.*)$': '<rootDir>/__mocks__/$1',
+
+    '\\.svg': '<rootDir>/src/__mocks__/svgMock.ts',
   },
   setupFilesAfterEnv: ['./jest.setup.ts'],
   transformIgnorePatterns: [
@@ -13,7 +15,9 @@ module.exports = {
   clearMocks: true,
   collectCoverage: true,
   collectCoverageFrom: [
-    './src/**/*.{js,ts}',
+    './src/**/*.{js,ts,tsx}',
+    '!./src/api/*.{js,ts,tsx}',
+    '!./src/types/*.{js,ts,tsx}',
     '!**/coverage/**',
     '!**/node_modules/**',
     '!**/babel.config.js',
